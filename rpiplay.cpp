@@ -38,6 +38,8 @@
 #include "lib/stream.h"
 #include "lib/logger.h"
 #include "lib/dnssd.h"
+#include "lib/esp32_comm.h"
+#include "lib/touch_handler.h"
 #include "renderers/video_renderer.h"
 #include "renderers/audio_renderer.h"
 
@@ -80,6 +82,8 @@ static audio_init_func_t audio_init_func = NULL;
 static video_renderer_t *video_renderer = NULL;
 static audio_renderer_t *audio_renderer = NULL;
 static logger_t *render_logger = NULL;
+static ESP32Comm *esp32_comm = NULL;
+static TouchHandler *touch_handler = NULL;
 
 static const video_renderer_list_entry_t video_renderers[] = {
 #if defined(HAS_RPI_RENDERER)
@@ -189,9 +193,42 @@ static audio_init_func_t find_audio_init_func(const char *name) {
     return NULL;
 }
 
+// Touch event callback
+void handle_touch_event(const TouchEvent& event) {
+    if (!esp32_comm || !esp32_comm->is_connected()) {
+        return;
+    }
+    
+    switch (event.type) {
+        case TouchEvent::TOUCH_DOWN:
+            LOGI("Touch down at (%d, %d)", event.x, event.y);
+            // Don't send touch down directly - wait for touch up to determine if it's a tap
+            break;
+            
+        case TouchEvent::TOUCH_UP:
+            LOGI("Touch up/click at (%d, %d)", event.x, event.y);
+            esp32_comm->send_click(event.x, event.y);
+            break;
+            
+        case TouchEvent::TOUCH_MOVE:
+            // For now, we don't handle drag gestures - just clicks and scrolls
+            break;
+            
+        case TouchEvent::SCROLL_UP:
+            LOGI("Scroll up at (%d, %d)", event.x, event.y);
+            esp32_comm->send_scroll_up(event.x, event.y, 3);
+            break;
+            
+        case TouchEvent::SCROLL_DOWN:
+            LOGI("Scroll down at (%d, %d)", event.x, event.y);
+            esp32_comm->send_scroll_down(event.x, event.y, 3);
+            break;
+    }
+}
+
 void print_info(char *name) {
     printf("RPiPlay %s: An open-source AirPlay mirroring server for Raspberry Pi\n", VERSION);
-    printf("Usage: %s [-n name] [-b (on|auto|off)] [-r (90|180|270)] [-l] [-a (hdmi|analog|off)] [-vr renderer] [-ar renderer]\n", name);
+    printf("Usage: %s [-n name] [-b (on|auto|off)] [-r (90|180|270)] [-l] [-a (hdmi|analog|off)] [-vr renderer] [-ar renderer] [-esp32 device] [-touch device] [-iphone WxH]\n", name);
     printf("Options:\n");
     printf("-n name               Specify the network name of the AirPlay server\n");
     printf("-b (on|auto|off)      Show black background always, only during active connection, or never\n");
@@ -208,6 +245,10 @@ void print_info(char *name) {
         printf("    %s: %s%s\n", audio_renderers[i].name, audio_renderers[i].description, i == 0 ? " [Default]" : "");
     }
     printf("-d                    Enable debug logging\n");
+    printf("-esp32 device         Enable ESP32 touch control via serial device (default: /dev/ttyUSB0)\n");
+    printf("-touch device         Enable touchscreen input device (default: /dev/input/event0)\n");
+    printf("-iphone WxH           Set iPhone screen resolution (default: 390x844 for iPhone 14)\n");
+    printf("-rpi WxH              Set RPi touchscreen resolution (default: 800x480)\n");
     printf("-v/-h                 Displays this help and version information\n");
 }
 
@@ -227,6 +268,16 @@ int main(int argc, char *argv[]) {
     audio_renderer_config_t audio_config;
     audio_config.device = DEFAULT_AUDIO_DEVICE;
     audio_config.low_latency = DEFAULT_LOW_LATENCY;
+    
+    // ESP32 and touch configuration
+    std::string esp32_device = "/dev/ttyUSB0";
+    std::string touch_device = "/dev/input/event0";
+    bool enable_esp32 = false;
+    bool enable_touch = false;
+    int iphone_width = 390;
+    int iphone_height = 844;
+    int rpi_width = 800;
+    int rpi_height = 480;
     
     // Default to the best available renderer
     video_init_func = video_renderers[0].init_func;
@@ -289,6 +340,30 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "Error: Unable to locate audio renderer \"%s\".\n", argv[i]);
                 exit(1);
             }
+        } else if (arg == "-esp32") {
+            if (i == argc - 1) continue;
+            esp32_device = std::string(argv[++i]);
+            enable_esp32 = true;
+        } else if (arg == "-touch") {
+            if (i == argc - 1) continue;
+            touch_device = std::string(argv[++i]);
+            enable_touch = true;
+        } else if (arg == "-iphone") {
+            if (i == argc - 1) continue;
+            std::string resolution(argv[++i]);
+            size_t x_pos = resolution.find('x');
+            if (x_pos != std::string::npos) {
+                iphone_width = std::stoi(resolution.substr(0, x_pos));
+                iphone_height = std::stoi(resolution.substr(x_pos + 1));
+            }
+        } else if (arg == "-rpi") {
+            if (i == argc - 1) continue;
+            std::string resolution(argv[++i]);
+            size_t x_pos = resolution.find('x');
+            if (x_pos != std::string::npos) {
+                rpi_width = std::stoi(resolution.substr(0, x_pos));
+                rpi_height = std::stoi(resolution.substr(x_pos + 1));
+            }
         } else if (arg == "-h" || arg == "-v") {
             print_info(argv[0]);
             exit(0);
@@ -305,12 +380,55 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // Initialize ESP32 communication if enabled
+    if (enable_esp32) {
+        esp32_comm = new ESP32Comm();
+        if (esp32_comm->init(esp32_device)) {
+            esp32_comm->set_iphone_resolution(iphone_width, iphone_height);
+            LOGI("ESP32 communication enabled on %s", esp32_device.c_str());
+        } else {
+            LOGE("Failed to initialize ESP32 communication");
+            delete esp32_comm;
+            esp32_comm = NULL;
+        }
+    }
+    
+    // Initialize touch handler if enabled
+    if (enable_touch) {
+        touch_handler = new TouchHandler();
+        if (touch_handler->init(touch_device)) {
+            touch_handler->set_coordinate_mapping(rpi_width, rpi_height, iphone_width, iphone_height);
+            touch_handler->set_touch_callback(handle_touch_event);
+            touch_handler->start();
+            LOGI("Touch input enabled on %s", touch_device.c_str());
+        } else {
+            LOGE("Failed to initialize touch input");
+            delete touch_handler;
+            touch_handler = NULL;
+        }
+    }
+
     running = true;
     while (running) {
         sleep(1);
     }
 
     LOGI("Stopping...");
+    
+    // Stop touch handler
+    if (touch_handler) {
+        touch_handler->stop();
+        delete touch_handler;
+        touch_handler = NULL;
+    }
+    
+    // Stop ESP32 communication
+    if (esp32_comm) {
+        esp32_comm->close();
+        delete esp32_comm;
+        esp32_comm = NULL;
+    }
+    
     stop_server();
 }
 
