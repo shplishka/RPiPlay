@@ -24,35 +24,41 @@ There still are some minor issues. Have a look at the TODO list below.
 RPiPlay might not be suitable for remote video playback, as it lacks a dedicated component for that: It seems like AirPlay on an AppleTV effectively runs a web server on the device and sends the URL to the AppleTV, thus avoiding the re-encoding of the video.
 For rough details, refer to the (mostly obsolete) [inofficial AirPlay specification](https://nto.github.io/AirPlay.html#screenmirroring).
 
+# esp32
 
+The file esp/main.ino is the code for the esp32. who is used to control the touch screen over the bluetooth on the iPhone.
 
 # Building
 
 The following packages are required for building on Raspbian:
 
-* **cmake** (for the build system)
-* **libavahi-compat-libdnssd-dev** (for the bonjour registration)
-* **libplist-dev** (for plist handling)
-* **libssl-dev** (for crypto primitives)
-* **ilclient** and Broadcom's OpenMAX stack as present in `/opt/vc` in Raspbian.
 
-For downloading the code, use these commands:
-```bash
+Then:
+    sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+Then:
+    sudo apt-get install cmake 
+    sudo apt-get install libavahi-compat-libdnssd-dev
+    sudo apt-get install libplist-dev 
+    sudo apt-get install libssl-dev
+    sudo apt-get install git
+
+Then:
 git clone https://github.com/FD-/RPiPlay.git
-cd RPiPlay
-```
 
-For building on a fresh Raspbian Stretch or Buster install, these steps should be run:
-```bash
-sudo apt-get install cmake
-sudo apt-get install libavahi-compat-libdnssd-dev
-sudo apt-get install libplist-dev
-sudo apt-get install libssl-dev
-mkdir build
-cd build
-cmake ..
-make -j
-```
+Then reboot.
+
+and lastly:
+    cd RPiPlay
+    mkdir build 
+    cd build 
+    cmake ..
+    make -j
+
+and:
+    sudo make install
+
+
 
 GCC 5 or later is required.
 
