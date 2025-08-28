@@ -76,11 +76,11 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
         switch (config->rotation) {
         case 90:
         case -270:
-            g_string_append(launch, "videoflip method=clockwise ! ");
+            g_string_append(launch, "videoflip method=rotate-90 ! ");
             break;
         case -90:
         case 270:
-            g_string_append(launch, "videoflip method=counterclockwise ! ");
+            g_string_append(launch, "videoflip method=rotate-270 ! ");
             break;
         case 180:
         case -180:
@@ -127,6 +127,11 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
         } else {
             g_string_append(launch, "autovideosink name=video_sink sync=false");
         }
+    }
+
+    // Log pipeline for debugging
+    if (logger) {
+        logger_log(logger, LOGGER_INFO, launch->str);
     }
 
     renderer->pipeline = gst_parse_launch(launch->str, &error);
