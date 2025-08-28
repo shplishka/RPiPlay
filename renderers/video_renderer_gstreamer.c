@@ -71,8 +71,11 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
     // Begin the video pipeline
     GString *launch = g_string_new("appsrc name=video_source stream-type=0 format=GST_FORMAT_TIME is-live=true !"
                                    "queue ! decodebin ! videoconvert ! ");
-    // Setup rotation
+    
+    // Setup rotation - force software processing to ensure videoflip works
     if (config->rotation != 0) {
+        // Force system memory to avoid zero-copy hardware paths that bypass videoflip
+        g_string_append(launch, "video/x-raw,format=I420 ! ");
         switch (config->rotation) {
         case 90:
         case -270:
@@ -92,6 +95,8 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
             free(renderer);
             return NULL;
         }
+        // Ensure proper format conversion after rotation
+        g_string_append(launch, "videoconvert ! ");
     }
 
     // Setup flip
@@ -129,8 +134,17 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
         }
     }
 
+    // Log the pipeline for debugging
+    printf("GStreamer pipeline: %s\n", launch->str);
+    
     renderer->pipeline = gst_parse_launch(launch->str, &error);
-    g_assert(renderer->pipeline);
+    if (!renderer->pipeline) {
+        printf("Failed to create GStreamer pipeline: %s\n", error ? error->message : "Unknown error");
+        if (error) g_error_free(error);
+        g_string_free(launch, TRUE);
+        free(renderer);
+        return NULL;
+    }
     g_string_free(launch, TRUE);
 
     renderer->appsrc = gst_bin_get_by_name(GST_BIN(renderer->pipeline), "video_source");
