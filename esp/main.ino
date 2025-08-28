@@ -47,10 +47,6 @@ public:
   
   // Move to absolute position using proper home-then-move strategy
   void moveToAbsolute(int targetX, int targetY) {
-    if (!bleMouse.isConnected()) {
-      Serial.println("❌ iPhone not connected");
-      return;
-    }
     
     // TEMPORARY: Disable coordinate constraints for testing
     // targetX = constrain(targetX, -200, screenWidth + 200);
@@ -70,7 +66,7 @@ public:
     int homeSteps = max(ACTUAL_SCREEN_WIDTH, ACTUAL_SCREEN_HEIGHT) / 50 + 5;  // Conservative homing
     for(int i = 0; i < homeSteps; i++) {
       bleMouse.move(-50, -50);  // Small, safe movements
-      delay(20);
+      delay(35);
     }
     
     // Step 2: Move from (0,0) to target position
@@ -102,9 +98,7 @@ public:
       
       if (moveX != 0 || moveY != 0) {
         bleMouse.move(moveX, moveY);
-        Serial.println("📍 Step: (" + String(moveX) + "," + String(moveY) + 
-                      ") → Remaining: (" + String(remainingX) + "," + String(remainingY) + ")");
-        delay(20);  // Slower for accuracy
+        delay(35);
       } else {
         break;
       }
@@ -115,10 +109,8 @@ public:
   
   // Click at current position
   void click() {
-    if (bleMouse.isConnected()) {
-      Serial.println("👆 Click executed");
-      bleMouse.click(MOUSE_LEFT);
-    }
+    Serial.println("👆 Click executed");
+    bleMouse.click(MOUSE_LEFT);
   }
   
   // Click at specific coordinates
@@ -135,14 +127,12 @@ public:
   
   // Scroll at current position
   void scroll(int direction, int amount = 1) {
-    if (bleMouse.isConnected()) {
-      String dirStr = (direction > 0) ? "UP" : "DOWN";
-      Serial.println("🔄 Scroll " + dirStr + " (" + String(abs(direction * amount)) + ")");
-      
-      for (int i = 0; i < amount; i++) {
-        bleMouse.move(0, 0, direction);
-        delay(50);
-      }
+    String dirStr = (direction > 0) ? "UP" : "DOWN";
+    Serial.println("🔄 Scroll " + dirStr + " (" + String(abs(direction * amount)) + ")");
+    
+    for (int i = 0; i < amount; i++) {
+      bleMouse.move(0, 0, direction);
+      delay(50);
     }
   }
 };
@@ -185,8 +175,13 @@ void setup() {
 }
 
 void loop() {
-  // Update LED status - on when connected
-  digitalWrite(2, bleMouse.isConnected() ? HIGH : LOW);
+  // Update LED status - throttle check to once per second
+  static unsigned long lastLedUpdateMs = 0;
+  unsigned long nowMs = millis();
+  if (nowMs - lastLedUpdateMs >= 1000) {
+    digitalWrite(2, bleMouse.isConnected() ? HIGH : LOW);
+    lastLedUpdateMs = nowMs;
+  }
   
   // Handle serial commands
   if (Serial.available()) {
@@ -205,12 +200,6 @@ void handleCommand(String command) {
   // STATUS command works even when disconnected
   if (command == "STATUS") {
     showStatus();
-    return;
-  }
-  
-  // Check connection for other commands
-  if (!bleMouse.isConnected()) {
-    Serial.println("❌ iPhone not connected - pair via Bluetooth first");
     return;
   }
   
