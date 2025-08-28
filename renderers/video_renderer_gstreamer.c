@@ -22,6 +22,7 @@
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct video_renderer_gstreamer_s {
     video_renderer_t base;
@@ -111,8 +112,22 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
         }
     }
 
-    // Finish the pipeline
-    g_string_append(launch, "autovideosink name=video_sink sync=false");
+    // Finish the pipeline (choose sink)
+    const char *forced_sink = getenv("RPIPLAY_GST_SINK");
+    if (forced_sink && forced_sink[0] != '\0') {
+        g_string_append_printf(launch, "%s name=video_sink sync=false", forced_sink);
+    } else {
+        // If not running under X/Wayland, prefer a TTY-capable sink
+        const char *x_display = getenv("DISPLAY");
+        const char *wayland_display = getenv("WAYLAND_DISPLAY");
+        if (!x_display && !wayland_display) {
+            // On pure TTY, kmssink is typically the right choice. If unavailable, the pipeline will fail;
+            // users can override with RPIPLAY_GST_SINK=fbdevsink device=/dev/fb0
+            g_string_append(launch, "kmssink name=video_sink sync=false");
+        } else {
+            g_string_append(launch, "autovideosink name=video_sink sync=false");
+        }
+    }
 
     renderer->pipeline = gst_parse_launch(launch->str, &error);
     g_assert(renderer->pipeline);
