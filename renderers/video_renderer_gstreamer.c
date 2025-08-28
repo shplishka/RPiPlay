@@ -73,16 +73,14 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
                                    "queue ! decodebin ! videoconvert ! ");
     // Setup rotation
     if (config->rotation != 0) {
-        // Force system memory buffers to ensure videoflip processes frames (avoid zero-copy dmabuf path)
-        g_string_append(launch, "video/x-raw,format=I420 ! ");
         switch (config->rotation) {
         case 90:
         case -270:
-            g_string_append(launch, "videoflip method=rotate-90 ! ");
+            g_string_append(launch, "videoflip method=clockwise ! ");
             break;
         case -90:
         case 270:
-            g_string_append(launch, "videoflip method=rotate-270 ! ");
+            g_string_append(launch, "videoflip method=counterclockwise ! ");
             break;
         case 180:
         case -180:
@@ -114,9 +112,6 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
         }
     }
 
-    // Ensure sink gets an appropriate raw format
-    g_string_append(launch, "videoconvert ! ");
-
     // Finish the pipeline (choose sink)
     const char *forced_sink = getenv("RPIPLAY_GST_SINK");
     if (forced_sink && forced_sink[0] != '\0') {
@@ -132,11 +127,6 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
         } else {
             g_string_append(launch, "autovideosink name=video_sink sync=false");
         }
-    }
-
-    // Log pipeline for debugging
-    if (logger) {
-        logger_log(logger, LOGGER_INFO, launch->str);
     }
 
     renderer->pipeline = gst_parse_launch(launch->str, &error);
