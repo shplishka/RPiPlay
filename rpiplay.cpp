@@ -216,11 +216,17 @@ void handle_touch_event(const TouchEvent& event) {
             
         case TouchEvent::SCROLL_UP:
             LOGI("Scroll up at (%d, %d)", event.x, event.y);
+            // Move to scroll position first, then scroll
+            esp32_comm->send_goto(event.x, event.y);
+            usleep(50000); // Wait 50ms for movement to complete
             esp32_comm->send_scroll_up(event.x, event.y, 3);
             break;
             
         case TouchEvent::SCROLL_DOWN:
             LOGI("Scroll down at (%d, %d)", event.x, event.y);
+            // Move to scroll position first, then scroll
+            esp32_comm->send_goto(event.x, event.y);
+            usleep(50000); // Wait 50ms for movement to complete
             esp32_comm->send_scroll_down(event.x, event.y, 3);
             break;
     }

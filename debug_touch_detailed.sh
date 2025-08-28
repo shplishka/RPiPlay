@@ -89,7 +89,7 @@ if [ -w "$ESP32_DEVICE" ]; then
     {
         echo "STATUS"
         sleep 0.5
-        echo "HOME"
+        echo "RESET"
         sleep 0.5
         echo "CLICK,100,200"
     } > "$ESP32_DEVICE"

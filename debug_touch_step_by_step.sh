@@ -142,7 +142,7 @@ echo "Sending test commands to ESP32..."
 {
     echo "STATUS"
     sleep 1
-    echo "HOME"  
+    echo "RESET"  
     sleep 1
     echo "CLICK,100,200"
 } > "$ESP32_DEVICE" 2>/dev/null

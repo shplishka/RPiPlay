@@ -54,9 +54,9 @@ echo "Sending: STATUS"
 echo "STATUS" > "$ESP32_DEVICE"
 sleep 1
 
-# Send HOME command  
-echo "Sending: HOME"
-echo "HOME" > "$ESP32_DEVICE"
+# Send RESET command  
+echo "Sending: RESET"
+echo "RESET" > "$ESP32_DEVICE"
 sleep 1
 
 # Send test click command
@@ -65,8 +65,8 @@ echo "CLICK,100,200" > "$ESP32_DEVICE"
 sleep 1
 
 # Send test scroll command
-echo "Sending: SCROLL_UP,150,300,3"
-echo "SCROLL_UP,150,300,3" > "$ESP32_DEVICE"
+echo "Sending: SCROLL,1,3"
+echo "SCROLL,1,3" > "$ESP32_DEVICE"
 sleep 1
 
 echo ""
@@ -95,9 +95,8 @@ echo "Current Position: (x,y)"
 echo "Target Position: (x,y)"
 echo "================="
 echo ""
-echo "📥 Command: HOME"
-echo "🏠 Homing cursor to (0,0)..."
-echo "✅ Cursor homed to (0,0)"
+echo "📥 Command: RESET"
+echo "🔄 Reset command received (no position tracking in this version)"
 echo ""
 echo "📥 Command: CLICK,100,200"
 echo "👆 Click at (100,200)"
@@ -111,12 +110,12 @@ echo "Please check the ESP32 serial monitor and answer:"
 echo ""
 
 read -p "Did ESP32 respond to STATUS command? (y/n): " status_response
-read -p "Did ESP32 respond to HOME command? (y/n): " home_response  
+read -p "Did ESP32 respond to RESET command? (y/n): " reset_response  
 read -p "Did ESP32 respond to CLICK command? (y/n): " click_response
 
 echo ""
 
-if [ "$status_response" = "y" ] && [ "$home_response" = "y" ] && [ "$click_response" = "y" ]; then
+if [ "$status_response" = "y" ] && [ "$reset_response" = "y" ] && [ "$click_response" = "y" ]; then
     echo "✅ SUCCESS: ESP32 communication WORKING!"
     echo ""
     echo "ESP32 setup checklist:"
@@ -128,7 +127,7 @@ if [ "$status_response" = "y" ] && [ "$home_response" = "y" ] && [ "$click_respo
     echo "✅ RESULT: ESP32 communication OK!"
     echo "Proceed to test5_test_rpiplay_init.sh"
     
-elif [ "$status_response" = "y" ] || [ "$home_response" = "y" ] || [ "$click_response" = "y" ]; then
+elif [ "$status_response" = "y" ] || [ "$reset_response" = "y" ] || [ "$click_response" = "y" ]; then
     echo "⚠ PARTIAL: ESP32 partially responding"
     echo ""
     echo "Some commands work, others don't. Check:"

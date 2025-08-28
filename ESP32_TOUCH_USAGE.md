@@ -137,12 +137,13 @@ The ESP32 accepts these serial commands (you can also send them manually):
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `GOTO,x,y` | Move cursor to coordinates | `GOTO,195,422` |
+| `MOVE,x,y` | Move cursor to coordinates | `MOVE,195,422` |
 | `CLICK,x,y` | Click at coordinates | `CLICK,195,422` |
-| `SCROLL_UP,x,y,amount` | Scroll up at coordinates | `SCROLL_UP,195,422,3` |
-| `SCROLL_DOWN,x,y,amount` | Scroll down at coordinates | `SCROLL_DOWN,195,422,3` |
-| `HOME` | Home cursor to (0,0) | `HOME` |
+| `SCROLL,dir,amt` | Scroll at current position | `SCROLL,1,3` (1=up, -1=down) |
+| `RESET` | Reset cursor position | `RESET` |
+| `RESET,x,y` | Reset cursor to coordinates | `RESET,0,0` |
 | `STATUS` | Show current status | `STATUS` |
+| `SCREEN,w,h` | Set screen resolution | `SCREEN,1170,2532` |
 
 ### Manual Testing
 ```bash
@@ -151,7 +152,7 @@ screen /dev/ttyUSB0 115200
 
 # Send commands manually
 CLICK,195,422
-SCROLL_UP,195,422,3
+SCROLL,1,3
 STATUS
 ```
 

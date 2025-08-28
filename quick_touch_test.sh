@@ -20,7 +20,7 @@ if [ -w "$ESP32_DEVICE" ]; then
     # Send test command
     echo "STATUS" > "$ESP32_DEVICE" 2>/dev/null && echo "✓ STATUS command sent to ESP32"
     sleep 1
-    echo "HOME" > "$ESP32_DEVICE" 2>/dev/null && echo "✓ HOME command sent to ESP32"
+    echo "RESET" > "$ESP32_DEVICE" 2>/dev/null && echo "✓ RESET command sent to ESP32"
     
     echo "Check ESP32 serial monitor (115200 baud) to see if it received commands"
 else

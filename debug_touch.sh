@@ -186,7 +186,7 @@ manual_esp32_test() {
             {
                 echo "STATUS"
                 sleep 1
-                echo "HOME"
+                echo "RESET"
                 sleep 1  
                 echo "CLICK,100,200"
             } > "$device" 2>/dev/null || print_error "Could not send commands to $device"

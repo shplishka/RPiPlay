@@ -57,7 +57,7 @@ bool ESP32Comm::is_connected() const {
 
 bool ESP32Comm::send_goto(int x, int y) {
     std::ostringstream cmd;
-    cmd << "GOTO," << x << "," << y;
+    cmd << "MOVE," << x << "," << y;
     return send_command(cmd.str());
 }
 
@@ -69,24 +69,24 @@ bool ESP32Comm::send_click(int x, int y) {
 
 bool ESP32Comm::send_scroll(int x, int y, int direction, int amount) {
     std::ostringstream cmd;
-    cmd << "SCROLL," << x << "," << y << "," << direction << "," << amount;
+    cmd << "SCROLL," << direction << "," << amount;
     return send_command(cmd.str());
 }
 
 bool ESP32Comm::send_scroll_up(int x, int y, int amount) {
     std::ostringstream cmd;
-    cmd << "SCROLL_UP," << x << "," << y << "," << amount;
+    cmd << "SCROLL," << 1 << "," << amount;  // 1 = up direction
     return send_command(cmd.str());
 }
 
 bool ESP32Comm::send_scroll_down(int x, int y, int amount) {
     std::ostringstream cmd;
-    cmd << "SCROLL_DOWN," << x << "," << y << "," << amount;
+    cmd << "SCROLL," << -1 << "," << amount;  // -1 = down direction
     return send_command(cmd.str());
 }
 
 bool ESP32Comm::send_home() {
-    return send_command("HOME");
+    return send_command("RESET");  // ESP32 uses RESET instead of HOME
 }
 
 bool ESP32Comm::send_status() {
@@ -94,8 +94,9 @@ bool ESP32Comm::send_status() {
 }
 
 bool ESP32Comm::send_calibrate(int x, int y) {
+    // ESP32 doesn't have a CALIBRATE command, use RESET to specified position
     std::ostringstream cmd;
-    cmd << "CALIBRATE," << x << "," << y;
+    cmd << "RESET," << x << "," << y;
     return send_command(cmd.str());
 }
 
