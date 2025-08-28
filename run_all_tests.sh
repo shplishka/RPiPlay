@@ -67,7 +67,8 @@ if [ "$1" = "auto" ]; then
     # Test 4
     echo "========== TEST 4: Testing ESP32 =========="
     echo "⚠ This test requires user verification - check ESP32 serial output"
-    if bash test4_test_esp32.sh; then
+    echo "⚠ Using SAFE version to avoid Bluetooth disconnection"
+    if bash test4_test_esp32_safe.sh; then
         echo "✅ Test 4 PASSED"
     else
         echo "❌ Test 4 FAILED - Fix and retry"
@@ -112,23 +113,25 @@ else
         echo "1. Check RPiPlay rebuild"
         echo "2. Check devices and permissions"
         echo "3. Test raw touch input"
-        echo "4. Test ESP32 communication"
-        echo "5. Test RPiPlay initialization"
-        echo "6. Test complete system"
-        echo "7. Run all tests automatically"
+        echo "4. Test ESP32 communication (SAFE - no mouse movements)"
+        echo "5. Test ESP32 communication (FULL - may disconnect Bluetooth)"
+        echo "6. Test RPiPlay initialization"
+        echo "7. Test complete system"
+        echo "8. Run all tests automatically"
         echo "0. Exit"
         echo ""
         
-        read -p "Select test (0-7): " choice
+        read -p "Select test (0-8): " choice
         
         case $choice in
             1) bash test1_check_rebuild.sh ;;
             2) bash test2_check_devices.sh ;;
             3) bash test3_test_touch_raw.sh ;;
-            4) bash test4_test_esp32.sh ;;
-            5) bash test5_test_rpiplay_init.sh ;;
-            6) bash test6_test_full_system.sh ;;
-            7) bash "$0" auto ;;
+            4) bash test4_test_esp32_safe.sh ;;
+            5) bash test4_test_esp32.sh ;;
+            6) bash test5_test_rpiplay_init.sh ;;
+            7) bash test6_test_full_system.sh ;;
+            8) bash "$0" auto ;;
             0) break ;;
             *) echo "Invalid option" ;;
         esac
@@ -162,6 +165,8 @@ echo "If Test 4 fails (ESP32):"
 echo "  Check ESP32 is programmed with main.ino"
 echo "  screen /dev/ttyUSB0 115200"
 echo "  Try different USB port/cable"
+echo "  If Bluetooth disconnects: use test4_test_esp32_safe.sh instead"
+echo "  CLICK/MOVE commands may cause iPhone to disconnect"
 echo ""
 echo "If Test 5 fails (initialization):"
 echo "  Check logs: cat /tmp/rpiplay_init.log"

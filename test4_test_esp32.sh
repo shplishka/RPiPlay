@@ -7,6 +7,10 @@ echo "=============================================="
 echo "  TEST 4: Testing ESP32 Communication"
 echo "=============================================="
 echo ""
+echo "⚠️  WARNING: This test sends CLICK and SCROLL commands"
+echo "⚠️  These may cause iPhone Bluetooth to disconnect!"
+echo "⚠️  For safer testing, use: bash test4_test_esp32_safe.sh"
+echo ""
 
 ESP32_DEVICE="/dev/ttyUSB0"
 
