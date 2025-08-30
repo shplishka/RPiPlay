@@ -72,50 +72,17 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
     GString *launch = g_string_new("appsrc name=video_source stream-type=0 format=GST_FORMAT_TIME is-live=true !"
                                    "queue ! decodebin ! videoconvert ! ");
     
-    // Setup rotation - force software processing to ensure videoflip works
-    if (config->rotation != 0) {
-        // Force system memory to avoid zero-copy hardware paths that bypass videoflip
-        g_string_append(launch, "video/x-raw,format=I420 ! ");
-        switch (config->rotation) {
-        case 90:
-        case -270:
-            g_string_append(launch, "videoflip method=clockwise ! ");
-            break;
-        case -90:
-        case 270:
-            g_string_append(launch, "videoflip method=counterclockwise ! ");
-            break;
-        case 180:
-        case -180:
-            g_string_append(launch, "videoflip method=rotate-180 ! ");
-            break;
-        default:
-            printf("Error: Rotation must be +/- 0,90,180,270\n");
-            g_string_free(launch, TRUE);
-            free(renderer);
-            return NULL;
-        }
-        // Ensure proper format conversion after rotation
-        g_string_append(launch, "videoconvert ! ");
-    }
+    // Setup rotation - HARDCODED to 90 degrees clockwise
+    // Force system memory to avoid zero-copy hardware paths that bypass videoflip
+    g_string_append(launch, "video/x-raw,format=I420 ! ");
+    g_string_append(launch, "videoflip method=clockwise ! ");
+    // Ensure proper format conversion after rotation
+    g_string_append(launch, "videoconvert ! ");
 
-    // Setup flip
-    if (config->flip != FLIP_NONE) {
-        switch (config->flip) {
-        case FLIP_HORIZONTAL:
-            g_string_append(launch, "videoflip method=horizontal-flip ! ");
-            break;
-        case FLIP_VERTICAL:
-            g_string_append(launch, "videoflip method=vertical-flip ! ");
-            break;
-        case FLIP_BOTH:
-            g_string_append(launch, "videoflip method=rotate-180 ! ");
-            break;
-        case FLIP_NONE:
-        default:
-            break;
-        }
-    }
+    // Setup flip - HARDCODED (uncomment the one you want)
+    // g_string_append(launch, "videoflip method=horizontal-flip ! ");
+    // g_string_append(launch, "videoflip method=vertical-flip ! ");
+    // g_string_append(launch, "videoflip method=rotate-180 ! ");
 
     // Finish the pipeline (choose sink)
     const char *forced_sink = getenv("RPIPLAY_GST_SINK");
