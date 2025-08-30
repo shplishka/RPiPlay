@@ -146,7 +146,7 @@ if [ -z "$TOUCH_DEVICE" ]; then
     echo ""
     echo "Fix: sudo chmod 666 /dev/input/event*"
     echo "Or: sudo usermod -a -G input $USER && reboot"
-    TOUCH_DEVICE="/dev/input/event0"  # Use default for testing
+    TOUCH_DEVICE="/dev/input/event4"  # Use default for testing
 fi
 
 print_step "Creating test script"

@@ -175,7 +175,7 @@ sudo usermod -a -G dialout $USER
 rpiplay -h
 
 # Test with ESP32 and touch (adjust device paths as needed)
-rpiplay -esp32 /dev/ttyUSB0 -touch /dev/input/event0 -iphone 390x844
+rpiplay -esp32 /dev/ttyUSB0 -touch /dev/input/event4 -iphone 390x844
 
 # Test different renderer if OpenMAX doesn't work
 rpiplay -vr gstreamer -ar gstreamer
@@ -210,7 +210,7 @@ cmake .. 2>&1 | grep -i openmax
 ### Alternative: Use GStreamer Renderer
 If OpenMAX still doesn't work, you can use GStreamer:
 ```bash
-rpiplay -vr gstreamer -ar gstreamer -esp32 /dev/ttyUSB0 -touch /dev/input/event0
+rpiplay -vr gstreamer -ar gstreamer -esp32 /dev/ttyUSB0 -touch /dev/input/event4
 ```
 
 ## Hardware-Specific Notes
@@ -236,7 +236,7 @@ rpiplay -vr gstreamer -ar gstreamer -esp32 /dev/ttyUSB0 -touch /dev/input/event0
 ls /dev/input/event*
 
 # Test which one is touch
-sudo cat /dev/input/event0  # Should show data when touching
+sudo cat /dev/input/event4  # Should show data when touching
 sudo cat /dev/input/event1  # Try each one
 
 # Use the correct device with -touch parameter
@@ -249,7 +249,7 @@ When everything works correctly, you should see:
 ```
 RPiPlay 1.2: An open-source AirPlay mirroring server for Raspberry Pi
 ESP32 communication enabled on /dev/ttyUSB0
-Touch input enabled on /dev/input/event0
+Touch input enabled on /dev/input/event4
 Coordinate mapping set: 800x480 -> 390x844
 ```
 

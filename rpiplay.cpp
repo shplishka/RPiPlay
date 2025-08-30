@@ -259,7 +259,7 @@ void print_info(char *name) {
     }
     printf("-d                    Enable debug logging\n");
     printf("-esp32 device         Enable ESP32 touch control via serial device (default: /dev/ttyUSB0)\n");
-    printf("-touch device         Enable touchscreen input device (default: /dev/input/event0)\n");
+    printf("-touch device         Enable touchscreen input device (default: /dev/input/event4)\n");
     printf("-iphone WxH           Set iPhone screen resolution (default: 390x844 for iPhone 14)\n");
     printf("-rpi WxH              Set RPi touchscreen resolution (default: 800x480)\n");
     printf("-v/-h                 Displays this help and version information\n");
@@ -284,7 +284,7 @@ int main(int argc, char *argv[]) {
     
     // ESP32 and touch configuration
     std::string esp32_device = "/dev/ttyUSB0";
-    std::string touch_device = "/dev/input/event0";
+    std::string touch_device = "/dev/input/event4";
     bool enable_esp32 = false;
     bool enable_touch = false;
     int iphone_width = 390;

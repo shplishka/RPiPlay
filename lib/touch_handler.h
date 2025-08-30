@@ -33,7 +33,7 @@ public:
     ~TouchHandler();
     
     // Initialize touch input handler
-    bool init(const std::string& device_path = "/dev/input/event0");
+    bool init(const std::string& device_path = "/dev/input/event4");
     
     // Close handler
     void close();

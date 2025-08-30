@@ -76,7 +76,7 @@ elif [ ${#ESP32_DEVICES[@]} -eq 1 ]; then
     echo "✅ Single device found: ${ESP32_DEVICES[0]}"
     echo ""
     echo "🚀 Use this command:"
-    echo "   rpiplay -esp32 ${ESP32_DEVICES[0]} -touch /dev/input/event0"
+    echo "   rpiplay -esp32 ${ESP32_DEVICES[0]} -touch /dev/input/event4"
     
 else
     echo "⚠️  Multiple devices found:"
@@ -93,7 +93,7 @@ else
     echo ""
     echo "🚀 Try each device:"
     for device in "${ESP32_DEVICES[@]}"; do
-        echo "   rpiplay -esp32 $device -touch /dev/input/event0"
+        echo "   rpiplay -esp32 $device -touch /dev/input/event4"
     done
 fi
 

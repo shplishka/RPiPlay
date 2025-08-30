@@ -207,8 +207,8 @@ test_touch_device() {
                     break
                 fi
             else
-                # Fallback - assume event0 is touch
-                touch_device="/dev/input/event0"
+                # Fallback - assume event4 is touch
+                touch_device="/dev/input/event4"
                 break
             fi
         fi
@@ -246,8 +246,8 @@ provide_solutions() {
     echo "   cmake .. && make -j4 && sudo make install"
     echo ""
     echo "4. Test touch manually:"
-    echo "   sudo evtest /dev/input/event0"
-    echo "   hexdump -C /dev/input/event0"
+    echo "   sudo evtest /dev/input/event4"
+    echo "   hexdump -C /dev/input/event4"
     echo ""
     echo "5. ESP32 issues:"
     echo "   Check ESP32 is programmed with correct firmware"

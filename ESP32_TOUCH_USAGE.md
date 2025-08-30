@@ -13,7 +13,7 @@ This guide explains how to use the new ESP32 touch control functionality that al
 ### Connections
 1. Connect the ESP32 to the Raspberry Pi via USB cable
 2. The ESP32 will appear as `/dev/ttyUSB0` (or similar) on the RPi
-3. Make sure the RPi touchscreen is working and accessible at `/dev/input/event0`
+3. Make sure the RPi touchscreen is working and accessible at `/dev/input/event4`
 
 ## Software Setup
 
@@ -47,7 +47,7 @@ sudo make install
 ### Basic Usage
 Start RPiPlay with ESP32 and touch support:
 ```bash
-rpiplay -esp32 /dev/ttyUSB0 -touch /dev/input/event0
+rpiplay -esp32 /dev/ttyUSB0 -touch /dev/input/event4
 ```
 
 ### Advanced Configuration
@@ -56,7 +56,7 @@ rpiplay -esp32 /dev/ttyUSB0 -touch /dev/input/event0
 rpiplay -esp32 /dev/ttyUSB0 -touch /dev/input/event1 -iphone 390x844 -rpi 800x480
 
 # With custom AirPlay name
-rpiplay -n "My RPi Touch" -esp32 /dev/ttyUSB0 -touch /dev/input/event0
+rpiplay -n "My RPi Touch" -esp32 /dev/ttyUSB0 -touch /dev/input/event4
 ```
 
 ### Command Line Options
@@ -64,7 +64,7 @@ rpiplay -n "My RPi Touch" -esp32 /dev/ttyUSB0 -touch /dev/input/event0
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-esp32 device` | ESP32 serial device path | `/dev/ttyUSB0` |
-| `-touch device` | Touch input device path | `/dev/input/event0` |
+| `-touch device` | Touch input device path | `/dev/input/event4` |
 | `-iphone WxH` | iPhone screen resolution | `390x844` (iPhone 14) |
 | `-rpi WxH` | RPi touchscreen resolution | `800x480` |
 
@@ -115,10 +115,10 @@ dmesg | tail
 ls -la /dev/input/event*
 
 # Test touch input
-sudo cat /dev/input/event0  # Should show data when touching
+sudo cat /dev/input/event4  # Should show data when touching
 
 # Check permissions
-sudo chmod 666 /dev/input/event0
+sudo chmod 666 /dev/input/event4
 ```
 
 ### iPhone Not Pairing
@@ -159,7 +159,7 @@ STATUS
 
 1. Start RPiPlay with touch control:
    ```bash
-   rpiplay -esp32 /dev/ttyUSB0 -touch /dev/input/event0 -iphone 390x844
+   rpiplay -esp32 /dev/ttyUSB0 -touch /dev/input/event4 -iphone 390x844
    ```
 
 2. Connect iPhone to RPiPlay for screen mirroring
@@ -168,7 +168,7 @@ STATUS
 
 4. The console will show debug output:
    ```
-   Touch input enabled on /dev/input/event0
+   Touch input enabled on /dev/input/event4
    ESP32 communication enabled on /dev/ttyUSB0
    Touch up/click at (195, 422)
    Sent to ESP32: CLICK,195,422

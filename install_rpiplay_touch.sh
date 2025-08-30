@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 # Configuration variables
 INSTALL_DIR="$HOME/RPiPlay"
 ESP32_DEVICE="/dev/ttyUSB0"
-TOUCH_DEVICE="/dev/input/event0"
+TOUCH_DEVICE="/dev/input/event4"
 IPHONE_RESOLUTION="390x844"
 RPI_RESOLUTION="800x480"
 GPU_MEMORY="128"
