@@ -68,15 +68,14 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
 
     assert(check_plugins());
 
-    // Begin the video pipeline - HARDCODED ROTATION
+    // Begin the video pipeline - MULTIPLE ROTATION ATTEMPTS
     GString *launch = g_string_new("appsrc name=video_source stream-type=0 format=GST_FORMAT_TIME is-live=true !"
                                    "queue ! decodebin ! videoconvert ! "
-                                   "video/x-raw ! videoflip method=clockwise ! videoconvert ! ");
-
-    // Setup flip - HARDCODED (uncomment the one you want)
-    // g_string_append(launch, "videoflip method=horizontal-flip ! ");
-    // g_string_append(launch, "videoflip method=vertical-flip ! ");
-    // g_string_append(launch, "videoflip method=rotate-180 ! ");
+                                   "video/x-raw,format=I420 ! videoflip method=clockwise ! "
+                                   "videoconvert ! videoscale ! ");
+    
+    // Try additional rotation methods
+    printf("*** ATTEMPTING HARDCODED 90 DEGREE ROTATION ***\n");
 
     // Finish the pipeline (choose sink)
     const char *forced_sink = getenv("RPIPLAY_GST_SINK");
