@@ -115,29 +115,46 @@ install_packages() {
     sudo apt update
     
     # Required packages for KMS and GStreamer
-    packages=(
+    essential_packages=(
         "gstreamer1.0-plugins-bad"    # Contains kmssink
         "gstreamer1.0-plugins-good"   # Additional GStreamer plugins
         "gstreamer1.0-plugins-base"   # Base GStreamer plugins
         "gstreamer1.0-plugins-ugly"   # Ugly but useful plugins
         "gstreamer1.0-libav"          # FFmpeg integration
         "libdrm2"                     # Direct Rendering Manager
-        "libdrm-dev"                  # DRM development headers
-        "libkms1"                     # Kernel Mode Setting library
         "mesa-utils"                  # Mesa utilities for testing
         "libgl1-mesa-dri"             # Mesa DRI drivers
         "libgles2-mesa"               # OpenGL ES support
         "libegl1-mesa"                # EGL support
     )
     
-    print_info "Installing packages: ${packages[*]}"
+    # Optional packages that may not be available on all systems
+    optional_packages=(
+        "libdrm-dev"                  # DRM development headers
+        "libkms1"                     # Kernel Mode Setting library (may not exist)
+        "libdrm-intel1"               # Intel DRM support
+        "libdrm-radeon1"              # Radeon DRM support
+        "libdrm-amdgpu1"              # AMDGPU DRM support
+    )
     
-    if sudo apt install -y "${packages[@]}"; then
-        print_success "All packages installed successfully"
+    print_info "Installing essential packages: ${essential_packages[*]}"
+    
+    if sudo apt install -y "${essential_packages[@]}"; then
+        print_success "Essential packages installed successfully"
     else
-        print_error "Failed to install some packages"
+        print_error "Failed to install essential packages"
         exit 1
     fi
+    
+    # Try to install optional packages
+    print_info "Installing optional packages (some may not be available)..."
+    for package in "${optional_packages[@]}"; do
+        if sudo apt install -y "$package" 2>/dev/null; then
+            print_success "Installed optional package: $package"
+        else
+            print_warning "Optional package not available: $package"
+        fi
+    done
 }
 
 # Configure user permissions
