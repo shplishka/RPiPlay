@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 #include <sys/socket.h>
 #include <ifaddrs.h>
