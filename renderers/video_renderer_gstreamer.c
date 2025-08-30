@@ -102,6 +102,7 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
     }
 
     // Log the pipeline for debugging
+    printf("*** USING GSTREAMER RENDERER WITH HARDCODED ROTATION ***\n");
     printf("GStreamer pipeline: %s\n", launch->str);
     
     renderer->pipeline = gst_parse_launch(launch->str, &error);

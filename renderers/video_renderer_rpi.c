@@ -270,28 +270,21 @@ static int video_renderer_rpi_init_decoder(video_renderer_rpi_t *renderer) {
         return -15;
     }
 
-    // Setup rotation
-    if (renderer->config->rotation != 0) {
-        int rotation = renderer->config->rotation;
-        OMX_CONFIG_ROTATIONTYPE omx_rotation;
-        memset(&omx_rotation, 0, sizeof(OMX_CONFIG_ROTATIONTYPE));
-        omx_rotation.nSize = sizeof(OMX_CONFIG_ROTATIONTYPE);
-        // Check the rotation here
-        if (rotation != 90 && rotation != -90 && rotation != 180 && rotation != -180 && rotation != 270 && rotation != -270) {
-            printf("Error: Rotation must be +/- 0,90,180,270\n");
-            video_renderer_rpi_destroy_decoder(renderer);
-            return -15;
-        }
-        omx_rotation.nRotation = rotation;
-        omx_rotation.nPortIndex = 90;
-        omx_rotation.nVersion.nVersion = OMX_VERSION;
-        OMX_ERRORTYPE error = OMX_SetConfig(ilclient_get_handle(renderer->video_renderer), OMX_IndexConfigCommonRotate,
-                                            &omx_rotation);
-        if (error != OMX_ErrorNone) {
-            printf("Error: %x\n", error);
-            video_renderer_rpi_destroy_decoder(renderer);
-            return -15;
-        }
+    // Setup rotation - HARDCODED to 90 degrees clockwise
+    printf("*** USING RPI RENDERER WITH HARDCODED ROTATION ***\n");
+    int rotation = 90; // Force 90 degree rotation
+    OMX_CONFIG_ROTATIONTYPE omx_rotation;
+    memset(&omx_rotation, 0, sizeof(OMX_CONFIG_ROTATIONTYPE));
+    omx_rotation.nSize = sizeof(OMX_CONFIG_ROTATIONTYPE);
+    omx_rotation.nRotation = rotation;
+    omx_rotation.nPortIndex = 90;
+    omx_rotation.nVersion.nVersion = OMX_VERSION;
+    OMX_ERRORTYPE error = OMX_SetConfig(ilclient_get_handle(renderer->video_renderer), OMX_IndexConfigCommonRotate,
+                                        &omx_rotation);
+    if (error != OMX_ErrorNone) {
+        printf("Error setting rotation: %x\n", error);
+        video_renderer_rpi_destroy_decoder(renderer);
+        return -15;
     }
 
     // Setup flipping
