@@ -79,8 +79,8 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
 
     assert(check_plugins());
 
-    // Begin the video pipeline - USING ROTATE ELEMENT (like your working test)
-    printf("*** FORCING 90 DEGREE ROTATION USING ROTATE ELEMENT ***\n");
+    // Begin the video pipeline - USING ROTATE ELEMENT WITH PROPER SCALING
+    printf("*** FORCING 90 DEGREE ROTATION WITH WINDOW SCALING ***\n");
     
     GString *launch = g_string_new("appsrc name=video_source stream-type=0 format=GST_FORMAT_TIME is-live=true !"
                                    "queue ! decodebin ! videoconvert ! ");
@@ -88,9 +88,14 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
     // Use rotate element with angle in radians (90 degrees = π/2 ≈ 1.5708)
     g_string_append(launch, "rotate angle=1.5708 ! videoconvert ! ");
     
-    printf("*** ROTATION PIPELINE CREATED WITH ROTATE ELEMENT ***\n");
+    // Add scaling and aspect ratio handling to fit the rotated video properly
+    // Method 1: Try to force dimensions that work with rotation
+    g_string_append(launch, "videoscale method=bilinear add-borders=false ! ");
+    g_string_append(launch, "video/x-raw ! ");
+    
+    printf("*** ROTATION PIPELINE WITH SCALING CREATED ***\n");
 
-    // Finish the pipeline (choose sink)
+    // Finish the pipeline (choose sink) with fullscreen properties
     const char *forced_sink = getenv("RPIPLAY_GST_SINK");
     if (forced_sink && forced_sink[0] != '\0') {
         g_string_append_printf(launch, "%s name=video_sink sync=false", forced_sink);
@@ -101,9 +106,10 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
         if (!x_display && !wayland_display) {
             // On pure TTY, kmssink is typically the right choice. If unavailable, the pipeline will fail;
             // users can override with RPIPLAY_GST_SINK=fbdevsink device=/dev/fb0
-            g_string_append(launch, "kmssink name=video_sink sync=false");
+            g_string_append(launch, "kmssink name=video_sink sync=false fullscreen=true");
         } else {
-            g_string_append(launch, "autovideosink name=video_sink sync=false");
+            // For X/Wayland, try to force fullscreen behavior
+            g_string_append(launch, "xvimagesink name=video_sink sync=false fullscreen=true force-aspect-ratio=false");
         }
     }
 
