@@ -195,18 +195,28 @@ static audio_init_func_t find_audio_init_func(const char *name) {
 
 // Touch event callback
 void handle_touch_event(const TouchEvent& event) {
-    if (!esp32_comm || !esp32_comm->is_connected()) {
+    std::cout << "DEBUG: Touch event received: type=" << event.type << " x=" << event.x << " y=" << event.y << std::endl;
+    
+    if (!esp32_comm) {
+        std::cout << "DEBUG: ESP32 communication not initialized!" << std::endl;
+        return;
+    }
+    
+    if (!esp32_comm->is_connected()) {
+        std::cout << "DEBUG: ESP32 not connected!" << std::endl;
         return;
     }
     
     switch (event.type) {
         case TouchEvent::TOUCH_DOWN:
             LOGI("Touch down at (%d, %d)", event.x, event.y);
+            std::cout << "DEBUG: Touch down event received, ESP32 connected: " << (esp32_comm->is_connected() ? "YES" : "NO") << std::endl;
             // Don't send touch down directly - wait for touch up to determine if it's a tap
             break;
             
         case TouchEvent::TOUCH_UP:
             LOGI("Touch up/click at (%d, %d)", event.x, event.y);
+            std::cout << "DEBUG: Sending CLICK command to ESP32" << std::endl;
             esp32_comm->send_click(event.x, event.y);
             break;
             
@@ -216,11 +226,13 @@ void handle_touch_event(const TouchEvent& event) {
             
         case TouchEvent::SCROLL_UP:
             LOGI("Scroll up at (%d, %d)", event.x, event.y);
+            std::cout << "DEBUG: Sending SCROLL_UP command to ESP32" << std::endl;
             esp32_comm->send_scroll_up(event.x, event.y, 3);
             break;
             
         case TouchEvent::SCROLL_DOWN:
             LOGI("Scroll down at (%d, %d)", event.x, event.y);
+            std::cout << "DEBUG: Sending SCROLL_DOWN command to ESP32" << std::endl;
             esp32_comm->send_scroll_down(event.x, event.y, 3);
             break;
     }
@@ -382,30 +394,40 @@ int main(int argc, char *argv[]) {
 
     // Initialize ESP32 communication if enabled
     if (enable_esp32) {
+        std::cout << "DEBUG: Initializing ESP32 communication on " << esp32_device << std::endl;
         esp32_comm = new ESP32Comm();
         if (esp32_comm->init(esp32_device)) {
             esp32_comm->set_iphone_resolution(iphone_width, iphone_height);
             LOGI("ESP32 communication enabled on %s", esp32_device.c_str());
+            std::cout << "DEBUG: ESP32 communication successfully initialized" << std::endl;
         } else {
             LOGE("Failed to initialize ESP32 communication");
+            std::cout << "DEBUG: ESP32 initialization FAILED" << std::endl;
             delete esp32_comm;
             esp32_comm = NULL;
         }
+    } else {
+        std::cout << "DEBUG: ESP32 communication NOT enabled (missing -esp32 flag)" << std::endl;
     }
     
     // Initialize touch handler if enabled
     if (enable_touch) {
+        std::cout << "DEBUG: Initializing touch handler on " << touch_device << std::endl;
         touch_handler = new TouchHandler();
         if (touch_handler->init(touch_device)) {
             touch_handler->set_coordinate_mapping(rpi_width, rpi_height, iphone_width, iphone_height);
             touch_handler->set_touch_callback(handle_touch_event);
             touch_handler->start();
             LOGI("Touch input enabled on %s", touch_device.c_str());
+            std::cout << "DEBUG: Touch handler successfully initialized and started" << std::endl;
         } else {
             LOGE("Failed to initialize touch input");
+            std::cout << "DEBUG: Touch handler initialization FAILED" << std::endl;
             delete touch_handler;
             touch_handler = NULL;
         }
+    } else {
+        std::cout << "DEBUG: Touch handler NOT enabled (missing -touch flag)" << std::endl;
     }
 
     running = true;

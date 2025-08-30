@@ -146,6 +146,9 @@ void TouchHandler::process_event(const struct input_event& event) {
                     int target_x, target_y;
                     map_coordinates(current_x_, current_y_, target_x, target_y);
                     
+                    std::cout << "Touch DOWN detected at raw(" << current_x_ << "," << current_y_ 
+                              << ") mapped(" << target_x << "," << target_y << ")" << std::endl;
+                    
                     if (touch_callback_) {
                         touch_callback_(TouchEvent(TouchEvent::TOUCH_DOWN, target_x, target_y));
                     }
@@ -161,16 +164,23 @@ void TouchHandler::process_event(const struct input_event& event) {
                         // Don't send touch up for scroll gestures
                         scroll_mode_ = false;
                     } else {
-                        // Check if this was a simple tap (no significant movement)
-                        int dx = abs(current_x_ - last_x_);
-                        int dy = abs(current_y_ - last_y_);
-                        
-                        if (dx < 20 && dy < 20) {
-                            // This was a tap - send click event
-                            if (touch_callback_) {
-                                touch_callback_(TouchEvent(TouchEvent::TOUCH_UP, target_x, target_y));
-                            }
+                                            // Check if this was a simple tap (no significant movement)
+                    int dx = abs(current_x_ - last_x_);
+                    int dy = abs(current_y_ - last_y_);
+                    
+                    std::cout << "Touch UP detected at raw(" << current_x_ << "," << current_y_ 
+                              << ") mapped(" << target_x << "," << target_y << ") movement: dx=" 
+                              << dx << " dy=" << dy << std::endl;
+                    
+                    if (dx < 50 && dy < 50) {  // Increased threshold for more reliable tap detection
+                        // This was a tap - send click event
+                        std::cout << "Sending CLICK event" << std::endl;
+                        if (touch_callback_) {
+                            touch_callback_(TouchEvent(TouchEvent::TOUCH_UP, target_x, target_y));
                         }
+                    } else {
+                        std::cout << "Touch movement too large for click (dx=" << dx << ", dy=" << dy << ")" << std::endl;
+                    }
                     }
                 }
             }
@@ -201,6 +211,9 @@ void TouchHandler::process_event(const struct input_event& event) {
                             
                             TouchEvent::Type scroll_type = (scroll_distance > 0) ? 
                                 TouchEvent::SCROLL_DOWN : TouchEvent::SCROLL_UP;
+                            
+                            std::cout << "Sending SCROLL " << (scroll_type == TouchEvent::SCROLL_DOWN ? "DOWN" : "UP") 
+                                      << " at (" << target_x << "," << target_y << ")" << std::endl;
                             
                             if (touch_callback_) {
                                 touch_callback_(TouchEvent(scroll_type, target_x, target_y));
