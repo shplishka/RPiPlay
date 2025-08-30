@@ -35,7 +35,7 @@ static gboolean check_plugins(void)
     int i;
     gboolean ret;
     GstRegistry *registry;
-    const gchar *needed[] = {"app", "libav", "playback", "autodetect", "videoparsersbad", NULL};
+    const gchar *needed[] = {"app", "libav", "playback", "autodetect", "videoparsersbad", "kms", NULL};
 
     registry = gst_registry_get();
     ret = TRUE;
@@ -111,8 +111,8 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
         }
     }
 
-    // Finish the pipeline
-    g_string_append(launch, "autovideosink name=video_sink sync=false");
+    // Finish the pipeline - use kmssink for better RPi hardware acceleration
+    g_string_append(launch, "kmssink name=video_sink sync=false can-scale=true");
 
     renderer->pipeline = gst_parse_launch(launch->str, &error);
     g_assert(renderer->pipeline);
