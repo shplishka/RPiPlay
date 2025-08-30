@@ -50,6 +50,17 @@ static gboolean check_plugins(void)
         }
         gst_object_unref(plugin);
     }
+    
+    // Check for rotate element specifically
+    GstElementFactory *rotate_factory = gst_element_factory_find("rotate");
+    if (!rotate_factory) {
+        g_print("WARNING: rotate element not found - rotation may not work\n");
+        g_print("Install with: sudo apt-get install gstreamer1.0-plugins-good\n");
+    } else {
+        g_print("INFO: rotate element found - rotation should work\n");
+        gst_object_unref(rotate_factory);
+    }
+    
     return ret;
 }
 
@@ -68,14 +79,16 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
 
     assert(check_plugins());
 
-    // Begin the video pipeline - MULTIPLE ROTATION ATTEMPTS
-    GString *launch = g_string_new("appsrc name=video_source stream-type=0 format=GST_FORMAT_TIME is-live=true !"
-                                   "queue ! decodebin ! videoconvert ! "
-                                   "video/x-raw,format=I420 ! videoflip method=clockwise ! "
-                                   "videoconvert ! videoscale ! ");
+    // Begin the video pipeline - USING ROTATE ELEMENT (like your working test)
+    printf("*** FORCING 90 DEGREE ROTATION USING ROTATE ELEMENT ***\n");
     
-    // Try additional rotation methods
-    printf("*** ATTEMPTING HARDCODED 90 DEGREE ROTATION ***\n");
+    GString *launch = g_string_new("appsrc name=video_source stream-type=0 format=GST_FORMAT_TIME is-live=true !"
+                                   "queue ! decodebin ! videoconvert ! ");
+    
+    // Use rotate element with angle in radians (90 degrees = π/2 ≈ 1.5708)
+    g_string_append(launch, "rotate angle=1.5708 ! videoconvert ! ");
+    
+    printf("*** ROTATION PIPELINE CREATED WITH ROTATE ELEMENT ***\n");
 
     // Finish the pipeline (choose sink)
     const char *forced_sink = getenv("RPIPLAY_GST_SINK");
