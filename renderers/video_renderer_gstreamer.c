@@ -68,16 +68,10 @@ video_renderer_t *video_renderer_gstreamer_init(logger_t *logger, video_renderer
 
     assert(check_plugins());
 
-    // Begin the video pipeline
+    // Begin the video pipeline - HARDCODED ROTATION
     GString *launch = g_string_new("appsrc name=video_source stream-type=0 format=GST_FORMAT_TIME is-live=true !"
-                                   "queue ! decodebin ! videoconvert ! ");
-    
-    // Setup rotation - HARDCODED to 90 degrees clockwise
-    // Force system memory to avoid zero-copy hardware paths that bypass videoflip
-    g_string_append(launch, "video/x-raw,format=I420 ! ");
-    g_string_append(launch, "videoflip method=clockwise ! ");
-    // Ensure proper format conversion after rotation
-    g_string_append(launch, "videoconvert ! ");
+                                   "queue ! decodebin ! videoconvert ! "
+                                   "video/x-raw ! videoflip method=clockwise ! videoconvert ! ");
 
     // Setup flip - HARDCODED (uncomment the one you want)
     // g_string_append(launch, "videoflip method=horizontal-flip ! ");
